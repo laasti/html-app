@@ -20,7 +20,8 @@
         "league/container": "2.0.3",
         "monolog/monolog": "1.17.2",
         "league/booboo": "1.0.0",
-        "laasti/lazydata": "~0.5.6"
+        "laasti/lazydata": "~0.5.6",
+        "mustache/mustache": "v2.10.0"
     },
     "require-dev": {
     },

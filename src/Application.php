@@ -26,9 +26,12 @@ class Application
         $container = new Container;
         $container->share('container', $container);
         $container->share('Interop\Container\ContainerInterface', $container);
-        $container->add('error_formatter.kernel', 'Laasti\Http\HttpKernel')->withArgument('peels.exceptions');
-        $container->share('error_formatter', 'Laasti\Core\Exceptions\PrettyBooBooFormatter')->withArguments(['error_formatter.kernel', 'request', 'response']);
         $container->add('config', [
+            'views' => [
+                'locations' => [
+                    __DIR__.'/../resources/views'
+                ],
+            ],
             'booboo' => [
                 'pretty_page' => 'error_formatter',
                 //How errors are displayed in the output
@@ -56,6 +59,12 @@ class Application
                     'routes' => []
                 ]
             ]
+        ]);
+        $container->add('error_formatter.kernel', 'Laasti\Http\HttpKernel')->withArgument('peels.exceptions');
+        $container->share('error_formatter', 'Laasti\Core\Exceptions\PrettyBooBooFormatter')->withArguments(['error_formatter.kernel', 'request', 'response']);
+        $container->add('Mustache_Engine');
+        $container->add('Laasti\Views\Engines\TemplateEngineInterface', 'Laasti\Views\Engines\Mustache')->withArguments([
+            'Mustache_Engine', $container->get('config')['views']['locations']
         ]);
         $container->share('kernel', 'Laasti\Http\HttpKernel')->withArgument('peels.http');
         $container->addServiceProvider('Laasti\Directions\Providers\LeagueDirectionsProvider');

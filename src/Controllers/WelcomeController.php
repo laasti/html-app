@@ -11,6 +11,6 @@ class WelcomeController implements \Laasti\Views\TemplateRendererAwareInterface
 
     public function __invoke(RequestInterface $request, ResponseInterface $response)
     {
-        return $this->getTemplateRenderer()->renderView('welcome.mustache');
+        return $this->getTemplateRenderer()->attachStream($response, new \Laasti\Views\Template('welcome.mustache'));
     }
 }
