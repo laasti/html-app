@@ -21,16 +21,17 @@ class Application
         $this->coreApp = $app;
     }
 
-    public static function create()
+    public static function create($config = [])
     {
         $container = new Container;
         $container->share('container', $container);
         $container->share('Interop\Container\ContainerInterface', $container);
-        $container->add('config', [
+        $container->add('config', array_merge_recursive([
             'views' => [
                 'locations' => [
                     __DIR__.'/../resources/views'
                 ],
+                'data_class' => 'Laasti\Views\Data\LazyData'
             ],
             'booboo' => [
                 'pretty_page' => 'error_formatter',
@@ -53,13 +54,27 @@ class Application
                     'middlewares' => []
                 ],
             ],
+            'translation' => [
+                'loaders' => [
+                    'array' => 'Symfony\Component\Translation\Loader\ArrayLoader',
+                    'json' => 'Symfony\Component\Translation\Loader\JsonFileLoader'
+                ],
+                'resources' => [
+                    'en' => [
+                        ['json', __DIR__.'/../resources/languages/en/messages.json'],
+                    ],
+                    'fr' => [
+                        ['json', __DIR__.'/../resources/languages/fr/messages.json'],
+                    ]
+                ],
+            ],
             'directions' => [
                 'default' => [
                     'strategy' => 'Laasti\Directions\Strategies\PeelsStrategy',
                     'routes' => []
                 ]
             ]
-        ]);
+        ], $config));
         $container->add('error_formatter.kernel', 'Laasti\Http\HttpKernel')->withArgument('peels.exceptions');
         $container->share('error_formatter', 'Laasti\Core\Exceptions\PrettyBooBooFormatter')->withArguments(['error_formatter.kernel', 'request', 'response']);
         $container->add('Mustache_Engine');
@@ -71,6 +86,7 @@ class Application
         $container->addServiceProvider('Laasti\Peels\Providers\LeaguePeelsProvider');
         $container->addServiceProvider('Laasti\Core\Providers\MonologProvider');
         //$container->addServiceProvider('Laasti\Lazydata\LazyDataProvider');
+        $container->addServiceProvider('Laasti\Lazydata\Providers\LeagueLazydataProvider');
         $container->addServiceProvider('Laasti\Views\Providers\LeagueViewsProvider');
         $container->addServiceProvider('Laasti\SymfonyTranslationProvider\SymfonyTranslationProvider');
         $coreApp = new CoreApp($container);
