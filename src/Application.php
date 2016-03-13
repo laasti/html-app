@@ -21,62 +21,16 @@ class Application
         $this->coreApp = $app;
     }
 
-    public static function create($config = [])
+    public static function create($configFiles = [])
     {
         $container = new Container;
+
+        $container->add('config_files', $configFiles);
+        $container->addServiceProvider(new \Laasti\Core\Providers\ConfigFilesProvider());
         $container->share('container', $container);
         $container->share('Interop\Container\ContainerInterface', $container);
-        $container->add('config', array_merge_recursive([
-            'views' => [
-                'locations' => [
-                    __DIR__.'/../resources/views'
-                ],
-                'data_class' => 'Laasti\Views\Data\LazyData'
-            ],
-            'booboo' => [
-                'pretty_page' => 'error_formatter',
-                //How errors are displayed in the output
-                'formatters' => [
-                    'League\BooBoo\Formatter\HtmlTableFormatter' => E_ALL
-                ],
-                //How errors are handled (logging, sending e-mails...)
-                'handlers' => [
-                    'League\BooBoo\Handler\LogHandler'
-                ]
-            ],
-            'peels' => [
-                'http' => [
-                    'runner' => 'Laasti\Peels\Http\HttpRunner',
-                    'middlewares' => []
-                ],
-                'exceptions' => [
-                    'runner' => 'Laasti\Peels\Http\HttpRunner',
-                    'middlewares' => []
-                ],
-            ],
-            'translation' => [
-                'loaders' => [
-                    'array' => 'Symfony\Component\Translation\Loader\ArrayLoader',
-                    'json' => 'Symfony\Component\Translation\Loader\JsonFileLoader'
-                ],
-                'resources' => [
-                    'en' => [
-                        ['json', __DIR__.'/../resources/languages/en/messages.json'],
-                    ],
-                    'fr' => [
-                        ['json', __DIR__.'/../resources/languages/fr/messages.json'],
-                    ]
-                ],
-            ],
-            'directions' => [
-                'default' => [
-                    'strategy' => 'Laasti\Directions\Strategies\PeelsStrategy',
-                    'routes' => []
-                ]
-            ]
-        ], $config));
         $container->add('error_formatter.kernel', 'Laasti\Http\HttpKernel')->withArgument('peels.exceptions');
-        $container->share('error_formatter', 'Laasti\Core\Exceptions\PrettyBooBooFormatter')->withArguments(['error_formatter.kernel']);
+        $container->share('error_formatter', 'Laasti\Core\Exceptions\PrettyBooBooFormatter')->withArguments(['error_formatter.kernel', 'peels.exceptions']);
         $container->add('Mustache_Engine');
         $container->add('Laasti\Views\Engines\TemplateEngineInterface', 'Laasti\Views\Engines\Mustache')->withArguments([
             'Mustache_Engine', $container->get('config')['views']['locations']
@@ -135,9 +89,9 @@ class Application
         return $this->coreApp->getLogger();
     }
 
-    public function middleware($middleware)
+    public function middleware($middleware, $stack = 'http')
     {
-        $this->container()->get('peels.http')->push($middleware);
+        $this->container()->get('peels.'.$stack)->push($middleware);
         return $this;
     }
 
