@@ -8,7 +8,7 @@ use Laasti\Http\Application as CoreApp;
 use League\Container\Container;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Zend\Diactoros\Response;;
+use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequestFactory;
 
 class Application
@@ -76,7 +76,7 @@ class Application
             ]
         ], $config));
         $container->add('error_formatter.kernel', 'Laasti\Http\HttpKernel')->withArgument('peels.exceptions');
-        $container->share('error_formatter', 'Laasti\Core\Exceptions\PrettyBooBooFormatter')->withArguments(['error_formatter.kernel', 'request', 'response']);
+        $container->share('error_formatter', 'Laasti\Core\Exceptions\PrettyBooBooFormatter')->withArguments(['error_formatter.kernel']);
         $container->add('Mustache_Engine');
         $container->add('Laasti\Views\Engines\TemplateEngineInterface', 'Laasti\Views\Engines\Mustache')->withArguments([
             'Mustache_Engine', $container->get('config')['views']['locations']
@@ -84,7 +84,7 @@ class Application
         $container->share('kernel', 'Laasti\Http\HttpKernel')->withArgument('peels.http');
         $container->addServiceProvider('Laasti\Directions\Providers\LeagueDirectionsProvider');
         $container->addServiceProvider('Laasti\Peels\Providers\LeaguePeelsProvider');
-        $container->addServiceProvider('Laasti\Core\Providers\MonologProvider');
+        $container->addServiceProvider('Laasti\Log\MonologProvider');
         //$container->addServiceProvider('Laasti\Lazydata\LazyDataProvider');
         $container->addServiceProvider('Laasti\Lazydata\Providers\LeagueLazydataProvider');
         $container->addServiceProvider('Laasti\Views\Providers\LeagueViewsProvider');
@@ -102,6 +102,7 @@ class Application
         if (is_null($response)) {
             $response = new Response;
         }
+        $this->container()->get('error_formatter')->setRequest($request)->setResponse($response);
         //Default routing middleware should be the last middleware added
         $this->container()->get('peels.http')->unshift('directions.default::find');
         $this->container()->get('peels.http')->push('directions.default::dispatch');
@@ -173,6 +174,6 @@ class Application
         if (is_callable($callableMiddleware)) {
             return $callableMiddleware;
         }
-        throw new InvalidArgumentException('Callable not resolvable: '.(is_object($callableMiddleware) ? get_class($callableMiddleware) : $callableMiddleware));
+        throw new \InvalidArgumentException('Callable not resolvable: '.(is_object($callableMiddleware) ? get_class($callableMiddleware) : $callableMiddleware));
     }
 }
