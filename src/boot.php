@@ -1,30 +1,45 @@
 <?php
 
+use Laasti\Core\Providers\ConfigFilesProvider;
+use Laasti\Http\Application;
+use League\Container\Container;
+use Zend\Diactoros\Response;
+use Zend\Diactoros\ServerRequestFactory;
+
 if (!defined('PUBLIC_PATH')) {
     exit('Invalid boot up.');
 }
-require __DIR__.'/../vendor/autoload.php';
-$configFiles = [__DIR__.'/../resources/config/default.php'];
+require __DIR__ . '/../vendor/autoload.php';
+$configFiles = [__DIR__ . '/../resources/config/default.php'];
 
-if (file_exists(__DIR__.'/../config.ini')) {
-    $config = parse_ini_file(__DIR__.'/../config.ini', true);
-    $configFiles[] = __DIR__.'/../resources/config/'.$config['environment'].'.php';
-    $configFiles[] = __DIR__.'/../config.ini';
+if (file_exists(__DIR__ . '/../config.ini')) {
+    $config = parse_ini_file(__DIR__ . '/../config.ini', true);
+    $configFiles[] = __DIR__ . '/../resources/config/' . $config['environment'] . '.php';
+    $configFiles[] = __DIR__ . '/../config.ini';
 }
+$container = new Container;
 
-$app = Laasti\HtmlApp\Application::create($configFiles);
+$container->add('config_files', $configFiles);
+$container->addServiceProvider(new ConfigFilesProvider());
 
-$app->container()->add('Laasti\HtmlApp\Controllers\WelcomeController');
-$app->container()->add('Laasti\HtmlApp\Controllers\NotFoundController');
-$app->container()->add('Laasti\HtmlApp\Middlewares\LocaleMiddleware')->withArguments([['en', 'fr'], 'en']);
+$container->add('Mustache_Engine');
+$container->add('Laasti\Views\Engines\TemplateEngineInterface', 'Laasti\Views\Engines\Mustache')->withArguments([
+    'Mustache_Engine', $container->get('config')['views']['locations']
+]);
 
-$app->middleware('Laasti\HtmlApp\Middlewares\LocaleMiddleware', 'exceptions');
-$app->middleware('Laasti\HtmlApp\Middlewares\LocaleMiddleware');
+$container->share('kernel', 'Laasti\Http\HttpKernel')->withArgument('peels.http');
 
-$app->route('GET', '/', 'Laasti\HtmlApp\Controllers\WelcomeController');
-$app->route('GET', '/fr', 'Laasti\HtmlApp\Controllers\WelcomeController');
+$container->addServiceProvider('Laasti\Directions\Providers\LeagueDirectionsProvider');
+$container->addServiceProvider('Laasti\Peels\Providers\LeaguePeelsProvider');
+$container->addServiceProvider('Laasti\Log\MonologProvider');
+$container->addServiceProvider('Laasti\Lazydata\Providers\LeagueLazydataProvider');
+$container->addServiceProvider('Laasti\Views\Providers\LeagueViewsProvider');
+$container->addServiceProvider('Laasti\SymfonyTranslationProvider\SymfonyTranslationProvider');
 
-$app->exception('Laasti\Directions\Exceptions\RouteNotFoundException', 'Laasti\HtmlApp\Controllers\NotFoundController');
-$app->exception('Laasti\Directions\Exceptions\MethodNotAllowedException', 'Laasti\HtmlApp\Controllers\NotFoundController');
+$container->add('Laasti\HtmlApp\Controllers\WelcomeController');
+$container->add('Laasti\HtmlApp\Controllers\NotFoundController');
+$container->add('Laasti\HtmlApp\Middlewares\LocaleMiddleware')->withArguments([['en', 'fr'], 'en']);
 
-$app->run();
+$app = new Application($container);
+
+$app->run(ServerRequestFactory::fromGlobals(), new Response);

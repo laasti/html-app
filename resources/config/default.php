@@ -2,9 +2,9 @@
 
 return [
     'defaultLocale' => 'en',
-    'debug' => true,
+    'debug' => false,
     'errorReporting' => E_ALL,
-    'displayErrors' => true,
+    'displayErrors' => false,
     'views' => [
         'data' => require __DIR__.'/viewdata.php',
         'locations' => [
@@ -13,7 +13,10 @@ return [
         'data_class' => 'Laasti\Views\Data\LazyData'
     ],
     'booboo' => [
-        'pretty_page' => 'error_formatter',
+        'exception_handlers' => [
+            'Laasti\Directions\Exceptions\RouteNotFoundException' => 'Laasti\HtmlApp\Controllers\NotFoundController',
+            'Laasti\Directions\Exceptions\MethodNotAllowedException' => 'Laasti\HtmlApp\Controllers\NotFoundController',
+        ],
         //How errors are displayed in the output
         'formatters' => [
             'League\BooBoo\Formatter\HtmlTableFormatter' => E_ALL
@@ -26,11 +29,17 @@ return [
     'peels' => [
         'http' => [
             'runner' => 'Laasti\Peels\Http\HttpRunner',
-            'middlewares' => []
+            'middlewares' => [
+                'directions.default::find',
+                'Laasti\HtmlApp\Middlewares\LocaleMiddleware',
+                'directions.default::dispatch'
+            ]
         ],
         'exceptions' => [
             'runner' => 'Laasti\Peels\Http\HttpRunner',
-            'middlewares' => []
+            'middlewares' => [
+                'Laasti\HtmlApp\Middlewares\LocaleMiddleware',
+            ]
         ],
     ],
     'translation' => [
@@ -50,7 +59,10 @@ return [
     'directions' => [
         'default' => [
             'strategy' => 'Laasti\Directions\Strategies\PeelsStrategy',
-            'routes' => []
+            'routes' => [
+                ['GET', '/', 'Laasti\HtmlApp\Controllers\WelcomeController'],
+                ['GET', '/fr', 'Laasti\HtmlApp\Controllers\WelcomeController'],
+            ]
         ]
     ]
 ];
