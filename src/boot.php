@@ -22,13 +22,6 @@ $container = new Container;
 $container->add('config_files', $configFiles);
 $container->addServiceProvider(new ConfigFilesProvider());
 
-$container->add('Mustache_Engine');
-$container->add('Laasti\Views\Engines\TemplateEngineInterface', 'Laasti\Views\Engines\Mustache')->withArguments([
-    'Mustache_Engine', $container->get('config')['views']['locations']
-]);
-
-$container->share('kernel', 'Laasti\Http\HttpKernel')->withArgument('peels.http');
-
 $container->addServiceProvider('Laasti\Directions\Providers\LeagueDirectionsProvider');
 $container->addServiceProvider('Laasti\Peels\Providers\LeaguePeelsProvider');
 $container->addServiceProvider('Laasti\Log\MonologProvider');
