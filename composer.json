@@ -11,18 +11,7 @@
         }
     ],
     "require": {
-        "laasti/symfony-translation-provider": "dev-master",
-        "laasti/views": "dev-master",
-        "laasti/application": "dev-develop",
-        "laasti/peels": "dev-master",
-        "laasti/directions": "dev-master",
-        "zendframework/zend-diactoros": "1.3.3",
-        "league/container": "2.0.3",
-        "monolog/monolog": "1.17.2",
-        "league/booboo": "1.0.0",
-        "laasti/lazydata": "dev-master",
-        "mustache/mustache": "v2.10.0",
-        "hassankhan/config": "0.10.0"
+        "laasti/html-edition": "dev-master"
     },
     "require-dev": {
     },

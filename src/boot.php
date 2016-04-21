@@ -20,14 +20,8 @@ if (file_exists(__DIR__ . '/../config.ini')) {
 $container = new Container;
 
 $container->add('config_files', $configFiles);
-$container->addServiceProvider(new ConfigFilesProvider());
 
-$container->addServiceProvider('Laasti\Directions\Providers\LeagueDirectionsProvider');
-$container->addServiceProvider('Laasti\Peels\Providers\LeaguePeelsProvider');
-$container->addServiceProvider('Laasti\Log\MonologProvider');
-$container->addServiceProvider('Laasti\Lazydata\Providers\LeagueLazydataProvider');
-$container->addServiceProvider('Laasti\Views\Providers\LeagueViewsProvider');
-$container->addServiceProvider('Laasti\SymfonyTranslationProvider\SymfonyTranslationProvider');
+$container->addServiceProvider('Laasti\HtmlEdition\ServiceProvider');
 
 $container->add('Laasti\HtmlApp\Controllers\WelcomeController');
 $container->add('Laasti\HtmlApp\Controllers\NotFoundController');
