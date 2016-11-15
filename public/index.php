@@ -2,4 +2,6 @@
 
 define('PUBLIC_PATH', __DIR__);
 
-require "../src/boot.php";
+$bootfile = '/src/boot.php';
+
+require '../bootloader.php';
