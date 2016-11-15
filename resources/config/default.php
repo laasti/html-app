@@ -2,13 +2,16 @@
 
 return [
     'defaultLocale' => 'en',
-    'debug' => false,
+    'debug' => true,
     'errorReporting' => E_ALL,
-    'displayErrors' => false,
+    'displayErrors' => true,
     'views' => [
         'data' => require __DIR__.'/viewdata.php',
         'locations' => [
             __DIR__.'/../views'
+        ],
+        'partial_locations' => [
+            __DIR__.'/../views/partials'
         ],
         'data_class' => 'Laasti\Views\Data\LazyData'
     ],
